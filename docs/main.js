@@ -3,7 +3,7 @@ let latestSpecsFromSearch = [];
 
 window.addEventListener('DOMContentLoaded', async () => {
   // new PagefindUI({element: "#search", showSubResults: true});
-  const pagefind = await import("/pagefind/pagefind.js");
+  const pagefind = await import("./pagefind/pagefind.js");
   pagefind.init();
   document.getElementById("search-input").addEventListener("input", async () => {
     let searchValue = document.getElementById("search-input").value;

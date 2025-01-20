@@ -120,7 +120,8 @@ function downloadResults() {
       title: spec.meta.title,
       url: spec.url,
       lastUpdated: spec.meta["Last updated"],
-      status: spec.filters.Action.join(", ")
+      actions: spec.filters.Action.join(", "),
+      status: spec.filters.status.join(", ")
     }
   });
 
@@ -128,5 +129,15 @@ function downloadResults() {
     header: true
   }, (err, output) => {
     console.log(output);
+    download(output, "text/csv", "specs.csv");
   });
+}
+
+function download(content, mimeType, filename){
+  const a = document.createElement('a') // Create "a" element
+  const blob = new Blob([content], {type: mimeType}) // Create a blob (file-like object)
+  const url = URL.createObjectURL(blob) // Create an object URL from blob
+  a.setAttribute('href', url) // Set "a" element link
+  a.setAttribute('download', filename) // Set download filename
+  a.click() // Start downloading
 }

@@ -1,3 +1,5 @@
+import * as csvStringify from 'https://cdn.jsdelivr.net/npm/csv-stringify@6.5.2/+esm'
+
 let shownSpecs = [];
 let latestSpecsFromSearch = [];
 
@@ -18,6 +20,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     input.addEventListener("change", applyFilters);
   });
   document.getElementById("last-updated-after-date").addEventListener("input", applyFilters);
+  document.getElementById("download-results-button").addEventListener("click", downloadResults);
 
   // Show all specifications when loading the page.
   const search = await pagefind.search(null);
@@ -94,6 +97,7 @@ function showSpecs(specs) {
   if (specs.length === 0) {
     document.getElementById("no-results-message").classList.remove("d-none");
     document.getElementById("search-results").classList.add("d-none");
+    document.getElementById("download-results").classList.add("d-none");
   } else {
     let tbody = ``;
 
@@ -104,7 +108,25 @@ function showSpecs(specs) {
     document.getElementById("result-table-body").innerHTML = tbody;
     document.getElementById("no-results-message").classList.add("d-none");
     document.getElementById("search-results").classList.remove("d-none");
+    document.getElementById("download-results").classList.remove("d-none");
   }
 
   shownSpecs = specs;
+}
+
+function downloadResults() {
+  const data = shownSpecs.map(spec => {
+    return {
+      title: spec.meta.title,
+      url: spec.url,
+      lastUpdated: spec.meta["Last updated"],
+      status: spec.filters.Action.join(", ")
+    }
+  });
+
+  csvStringify.stringify(data, {
+    header: true
+  }, (err, output) => {
+    console.log(output);
+  });
 }

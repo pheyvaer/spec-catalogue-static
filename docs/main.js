@@ -35,7 +35,7 @@ async function processSearchValue(search) {
   const results = await Promise.all(search.results.slice(0, 1000).map(r => r.data()));
   latestSpecsFromSearch = results;
 
-  showSpecs(results);
+  applyFilters();
 }
 
 function applyFilters() {

@@ -5,6 +5,7 @@
   <title>KNowS Spec Catalogue</title>
 
   <link href="pagefind/pagefind-ui.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <script src="pagefind/pagefind-ui.js"></script>
@@ -19,19 +20,116 @@
       <h1>KNoWS Spec Catalogue</h1>
     </div>
   </div>
-  <div class="row mb-5">
+  <div class="row mb-2">
     <div class="col">
-      <div id="search"></div>
+      <input id="search-input" type="text" class="form-control form-control-lg" placeholder="Search"
+             aria-label="Search">
     </div>
   </div>
-  <div class="row mb-3">
+  <div id="filters" class="row mb-5 mt-2">
+    <div class="col-1">
+      <div id="status-dropdown" class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Status
+        </button>
+        <div class="dropdown-menu px-4 py-3">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="draft-community-group-report"
+                   value="Draft Community Group Report" checked>
+            <label class="form-check-label" for="draft-community-group-report">
+              Draft Community Group Report
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="living-document" value="Living Document" checked>
+            <label class="form-check-label" for="living-document">
+              Living Document
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="w3c-recommendation" value="W3C Recommendation" checked>
+            <label class="form-check-label" for="w3c-recommendation">
+              W3C Recommendation
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="draft" value="Unofficial Draft" checked>
+            <label class="form-check-label" for="draft">
+              Unofficial Draft
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-2">
+      <div id="action-dropdown" class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          KNoWS' actions
+        </button>
+        <div class="dropdown-menu px-4 py-3">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="contribute" value="Contribute" checked>
+            <label class="form-check-label" for="contribute">
+              Contribute
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="create" value="Create" checked>
+            <label class="form-check-label" for="create">
+              Create
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="endorse" value="Endorse" checked>
+            <label class="form-check-label" for="endorse">
+              Endorse
+            </label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="lead" value="Lead" checked>
+            <label class="form-check-label" for="lead">
+              Lead
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="col">
-      <h2>All specifications</h2>
+      <div id="last-updated-after">
+        <label class="form-label" for="last-updated-after-date">
+          Last updated after
+        </label>
+        <input type="text" class="form-control" id="last-updated-after-date" placeholder="2025-01-20">
+      </div>
+    </div>
+    <div class="col">
+      <div id="edited-before"></div>
     </div>
   </div>
-  <div class="row">
+  <div id="filters-error-message" class="row mb-2 d-none">
     <div class="col">
-      <div id="list"></div>
+
+    </div>
+  </div>
+  <div id="no-results-message" class="row mb-5 d-none">
+    <div class="col">
+      No results were found. Try another term or leave the search field blank to show all specifications.
+    </div>
+  </div>
+  <div id="search-results" class="row mb-5 d-none">
+    <div class="col">
+      <table class="table">
+        <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Status</th>
+          <th scope="col">Last updated</th>
+          <th scope="col">KNoWS actions</th>
+        </tr>
+        </thead>
+        <tbody id="result-table-body">
+        </tbody>
+      </table>
     </div>
   </div>
   <div class="row">
@@ -44,39 +142,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-<script>
-  window.addEventListener('DOMContentLoaded', async () => {
-    new PagefindUI({element: "#search", showSubResults: true});
-
-    const response = await fetch("./specs.json");
-    const specs = await response.json();
-    specs.sort((a, b) => {
-      if (a.title > b.title) {
-        return 1;
-      } else if (a.title < b.title) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-
-    let ul = "<ul>";
-
-    for (const spec of specs) {
-      ul += `<li><a href="${spec["@id"]}">${spec.title}</a> - ${spec["adms:status"].title}`;
-      if (spec.lastUpdated) {
-        ul += ` (last modified ${spec.lastUpdated})`;
-      }
-      ul += `</li>`;
-    }
-
-    ul += "</ul>"
-    document.getElementById("list").innerHTML = ul;
-
-    const response2 = await fetch("./builder.json");
-    const builder = await response2.json();
-    document.getElementById("latest-run").innerText = dateFns.format(new Date(builder.dateTime), "yyyy-MM-dd kk:mm O");
-  });
-</script>
+<script src="main.js"></script>
 </body>
 </html>

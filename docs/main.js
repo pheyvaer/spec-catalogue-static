@@ -1,7 +1,13 @@
-import * as csvStringify from 'https://cdn.jsdelivr.net/npm/csv-stringify@6.5.2/+esm'
+import * as csvStringify from 'https://cdn.jsdelivr.net/npm/csv-stringify@6.5.2/+esm';
+import {
+  Grid,
+  html
+} from "https://unpkg.com/gridjs?module";
 
 let shownSpecs = [];
 let latestSpecsFromSearch = [];
+let grid;
+let specTitleToUrl = {};
 
 window.addEventListener('DOMContentLoaded', async () => {
   // new PagefindUI({element: "#search", showSubResults: true});
@@ -21,6 +27,24 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById("last-updated-after-date").addEventListener("input", applyFilters);
   document.getElementById("download-results-button").addEventListener("click", downloadResults);
+
+  grid = new Grid({
+    columns: [{
+      name: 'Title',
+      id: "title",
+      formatter: (_, row) => html(`<a href='${specTitleToUrl[row.cells[0].data]}'>${row.cells[0].data}</a>`)
+    }, "Status", {
+      name: "Last updated",
+      sort: {
+        compare: compareLastUpdated
+      }
+    }, {
+      name: "KNoWS' actions",
+      id: "actions"
+    }],
+    sort: true,
+    data: []
+  }).render(document.getElementById("wrapper"));
 
   // Show all specifications when loading the page.
   const search = await pagefind.search(null);
@@ -47,7 +71,7 @@ function applyFilters() {
     .map(input => input.value);
   console.log(selectedActions);
 
-  const selectedStatuses =  Array.from(document.querySelectorAll("#status-dropdown input"))
+  const selectedStatuses = Array.from(document.querySelectorAll("#status-dropdown input"))
     .filter(input => input.checked)
     .map(input => input.value);
   console.log(selectedStatuses);
@@ -80,7 +104,7 @@ function applyFilters() {
     if (!afterDate) {
       return spec.filters.Action.some(action => selectedActions.includes(action))
         && spec.filters.status.some(status => selectedStatuses.includes(status));
-    } else if (spec.meta["Last updated"]){
+    } else if (spec.meta["Last updated"]) {
       return spec.filters.Action.some(action => selectedActions.includes(action))
         && spec.filters.status.some(status => selectedStatuses.includes(status))
         && (new Date(spec.meta["Last updated"]) > afterDate);
@@ -99,13 +123,21 @@ function showSpecs(specs) {
     document.getElementById("search-results").classList.add("d-none");
     document.getElementById("download-results").classList.add("d-none");
   } else {
-    let tbody = ``;
+    const gridData = specs.map(spec => {
+      specTitleToUrl[spec.meta.title] = spec.url;
 
-    for (const spec of specs) {
-      tbody += `<tr><th scope="row"><a href="${spec.url}">${spec.meta.title}</a></th><td>${spec.meta.status}</td><td>${spec.meta["Last updated"] || ""}</td><td>${spec.filters.Action.join(", ")}</td>`
-    }
+      return {
+        title: spec.meta.title,
+        lastUpdated: spec.meta["Last updated"],
+        actions: spec.filters.Action.join(", "),
+        status: spec.filters.status.join(", ")
+      }
+    });
 
-    document.getElementById("result-table-body").innerHTML = tbody;
+    grid.updateConfig({
+      data: gridData
+    }).forceRender();
+
     document.getElementById("no-results-message").classList.add("d-none");
     document.getElementById("search-results").classList.remove("d-none");
     document.getElementById("download-results").classList.remove("d-none");
@@ -133,11 +165,32 @@ function downloadResults() {
   });
 }
 
-function download(content, mimeType, filename){
+function download(content, mimeType, filename) {
   const a = document.createElement('a') // Create "a" element
   const blob = new Blob([content], {type: mimeType}) // Create a blob (file-like object)
   const url = URL.createObjectURL(blob) // Create an object URL from blob
   a.setAttribute('href', url) // Set "a" element link
   a.setAttribute('download', filename) // Set download filename
   a.click() // Start downloading
+}
+
+function compareLastUpdated(a, b) {
+  if (!a) {
+    return 1;
+  }
+
+  if (!b) {
+    return -1
+  }
+
+  a = new Date(a);
+  b = new Date(b);
+
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
 }

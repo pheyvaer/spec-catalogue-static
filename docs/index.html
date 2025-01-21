@@ -8,6 +8,7 @@
   <link href="style.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
   <script src="pagefind/pagefind-ui.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/4.1.0/cdn.min.js"
           integrity="sha512-bz58Sg3BAWMEMPTH0B8+pK/+5Qfqq6b2Ho2G4ld12x4fiUVqpY8jSbN/73qpBQYFLU4QnKVL5knUm4uqcJGLVw=="
@@ -26,86 +27,102 @@
              aria-label="Search">
     </div>
   </div>
-  <div id="filters" class="row mb-5 mt-2">
-    <div class="col-1">
-      <div id="status-dropdown" class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Status
-        </button>
-        <div class="dropdown-menu px-4 py-3">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="draft-community-group-report"
-                   value="Draft Community Group Report" checked>
-            <label class="form-check-label" for="draft-community-group-report">
-              Draft Community Group Report
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="living-document" value="Living Document" checked>
-            <label class="form-check-label" for="living-document">
-              Living Document
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="w3c-recommendation" value="W3C Recommendation" checked>
-            <label class="form-check-label" for="w3c-recommendation">
-              W3C Recommendation
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="draft" value="Unofficial Draft" checked>
-            <label class="form-check-label" for="draft">
-              Unofficial Draft
-            </label>
-          </div>
-        </div>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li id="status-dropdown" class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="statusDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Status
+            </a>
+            <ul class="dropdown-menu px-4 py-3" aria-labelledby="statusDropdown">
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="draft-community-group-report"
+                         value="Draft Community Group Report" checked>
+                  <label class="form-check-label" for="draft-community-group-report">
+                    Draft Community Group Report
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="living-document" value="Living Document" checked>
+                  <label class="form-check-label" for="living-document">
+                    Living Document
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="w3c-recommendation" value="W3C Recommendation" checked>
+                  <label class="form-check-label" for="w3c-recommendation">
+                    W3C Recommendation
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="draft" value="Unofficial Draft" checked>
+                  <label class="form-check-label" for="draft">
+                    Unofficial Draft
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li id="action-dropdown" class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="actionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              KNoWS' actions
+            </a>
+            <ul class="dropdown-menu px-4 py-3" aria-labelledby="actionDropdown">
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="contribute" value="Contribute" checked>
+                  <label class="form-check-label" for="contribute">
+                    Contribute
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="create" value="Create" checked>
+                  <label class="form-check-label" for="create">
+                    Create
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="endorse" value="Endorse" checked>
+                  <label class="form-check-label" for="endorse">
+                    Endorse
+                  </label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check dropdown-item">
+                  <input type="checkbox" class="form-check-input" id="lead" value="Lead" checked>
+                  <label class="form-check-label" for="lead">
+                    Lead
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item pt-1">
+            <form id="last-updated-after" class="align-items-center">
+              <input type="text" class="form-control form-control-sm" id="last-updated-after-date" placeholder="Last updated after">
+            </form>
+          </li>
+        </ul>
       </div>
     </div>
-    <div class="col-2">
-      <div id="action-dropdown" class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          KNoWS' actions
-        </button>
-        <div class="dropdown-menu px-4 py-3">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="contribute" value="Contribute" checked>
-            <label class="form-check-label" for="contribute">
-              Contribute
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="create" value="Create" checked>
-            <label class="form-check-label" for="create">
-              Create
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="endorse" value="Endorse" checked>
-            <label class="form-check-label" for="endorse">
-              Endorse
-            </label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="lead" value="Lead" checked>
-            <label class="form-check-label" for="lead">
-              Lead
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div id="last-updated-after">
-        <label class="form-label" for="last-updated-after-date">
-          Last updated after
-        </label>
-        <input type="text" class="form-control" id="last-updated-after-date" placeholder="2025-01-20">
-      </div>
-    </div>
-    <div class="col">
-      <div id="edited-before"></div>
-    </div>
-  </div>
+  </nav>
   <div id="filters-error-message" class="row mb-2 d-none">
     <div class="col">
 
@@ -113,28 +130,17 @@
   </div>
   <div id="no-results-message" class="row mb-5 d-none">
     <div class="col">
-      No results were found. Try another term or leave the search field blank to show all specifications.
+      No results were found. Try another term or update your filters. Leave the search field blank to show all specifications.
     </div>
   </div>
   <div id="search-results" class="row d-none">
     <div class="col">
-      <table class="table">
-        <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Status</th>
-          <th scope="col">Last updated</th>
-          <th scope="col">KNoWS actions</th>
-        </tr>
-        </thead>
-        <tbody id="result-table-body">
-        </tbody>
-      </table>
+      <div id="wrapper"></div>
     </div>
   </div>
   <div id="download-results" class="row mt-1">
     <div class="col">
-      <button id="download-results-button" type="button" class="btn btn-primary">Download results</button>
+      <button id="download-results-button" type="button" class="btn btn-knows">Download results</button>
     </div>
   </div>
   <div class="row mt-3">

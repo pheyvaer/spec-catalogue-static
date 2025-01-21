@@ -7,6 +7,6 @@
     background-color: #0e955b !important;
 }
 
-#action-dropdown {
+#action-dropdown, #last-updated-item {
     padding-right: 10px;
 }

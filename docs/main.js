@@ -8,6 +8,30 @@ let shownSpecs = [];
 let latestSpecsFromSearch = [];
 let grid;
 let specTitleToUrl = {};
+const columnsConfig = [{
+  name: 'Title',
+  id: "title",
+  formatter: (_, row) => html(`<a href='${specTitleToUrl[row.cells[0].data]}'>${row.cells[0].data}</a>`)
+}, {
+  name: "Description",
+  hidden: true,
+  sort: {
+    compare: compareDescription
+  }
+}, "Status", {
+  name: "Last updated",
+  sort: {
+    compare: compareLastUpdated
+  }
+}, {
+  name: "KNoWS' action",
+  id: "actions"
+}];
+const gridConfig = {
+  columns: columnsConfig,
+  sort: true,
+  data: []
+};
 
 window.addEventListener('DOMContentLoaded', async () => {
   // new PagefindUI({element: "#search", showSubResults: true});
@@ -23,28 +47,23 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.querySelectorAll("input[type='checkbox']").forEach(input => {
-    input.addEventListener("change", applyFilters);
+    if (input.id !== "show-description") {
+      input.addEventListener("change", applyFilters);
+    }
   });
+
+  document.getElementById("show-description").addEventListener("change", () => {
+    columnsConfig[1].hidden = !document.getElementById("show-description").checked;
+
+    grid.updateConfig({
+      columns: columnsConfig
+    }).forceRender();
+  });
+
   document.getElementById("last-updated-after-date").addEventListener("input", applyFilters);
   document.getElementById("download-results-button").addEventListener("click", downloadResults);
 
-  grid = new Grid({
-    columns: [{
-      name: 'Title',
-      id: "title",
-      formatter: (_, row) => html(`<a href='${specTitleToUrl[row.cells[0].data]}'>${row.cells[0].data}</a>`)
-    }, "Status", {
-      name: "Last updated",
-      sort: {
-        compare: compareLastUpdated
-      }
-    }, {
-      name: "KNoWS' actions",
-      id: "actions"
-    }],
-    sort: true,
-    data: []
-  }).render(document.getElementById("wrapper"));
+  grid = new Grid(gridConfig).render(document.getElementById("wrapper"));
 
   // Show all specifications when loading the page.
   const search = await pagefind.search(null);
@@ -128,8 +147,9 @@ function showSpecs(specs) {
 
       return {
         title: spec.meta.title,
+        description: spec.meta.description,
         lastUpdated: spec.meta["Last updated"],
-        actions: spec.filters.Action.join(", "),
+        actions: getHighestAction(spec.filters.Action),
         status: spec.filters.status.join(", ")
       }
     });
@@ -150,6 +170,7 @@ function downloadResults() {
   const data = shownSpecs.map(spec => {
     return {
       title: spec.meta.title,
+      description: spec.meta.description,
       url: spec.url,
       lastUpdated: spec.meta["Last updated"],
       actions: spec.filters.Action.join(", "),
@@ -192,5 +213,35 @@ function compareLastUpdated(a, b) {
     return 1;
   } else {
     return 0;
+  }
+}
+
+function compareDescription(a, b) {
+  if (!a) {
+    return 1;
+  }
+
+  if (!b) {
+    return -1
+  }
+
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+function getHighestAction(actions) {
+  if (actions.includes("Lead")) {
+    return "Lead";
+  } else if (actions.includes("Create")) {
+    return "Create";
+  } else if (actions.includes("Contribute")) {
+    return "Contribute";
+  } else {
+    return "Endorse"
   }
 }

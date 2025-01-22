@@ -37,18 +37,18 @@ window.addEventListener('DOMContentLoaded', async () => {
   // new PagefindUI({element: "#search", showSubResults: true});
   const pagefind = await import("./pagefind/pagefind.js");
   pagefind.init();
-  document.getElementById("search-input").addEventListener("input", async () => {
+  document.getElementById("search-input").addEventListener("input", debounce(async () => {
     let searchValue = document.getElementById("search-input").value;
     if (searchValue === "") {
       searchValue = null;
     }
     const search = await pagefind.search(searchValue);
     processSearchValue(search);
-  });
+  }, 300));
 
   document.querySelectorAll("input[type='checkbox']").forEach(input => {
     if (input.id !== "show-description") {
-      input.addEventListener("change", applyFilters);
+      input.addEventListener("change", applyFiltersAndShowSpecs);
     }
   });
 
@@ -60,7 +60,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }).forceRender();
   });
 
-  document.getElementById("last-updated-after-date").addEventListener("input", applyFilters);
+  document.getElementById("last-updated-after-date").addEventListener("input", applyFiltersAndShowSpecs);
   document.getElementById("download-results-button").addEventListener("click", downloadResults);
 
   grid = new Grid(gridConfig).render(document.getElementById("wrapper"));
@@ -78,10 +78,13 @@ async function processSearchValue(search) {
   const results = await Promise.all(search.results.slice(0, 1000).map(r => r.data()));
   latestSpecsFromSearch = results;
 
-  applyFilters();
+  applyFiltersAndShowSpecs();
 }
 
-function applyFilters() {
+/**
+ * This method applies the filters for status, action, and last updated, followed by showing the specs.
+ */
+function applyFiltersAndShowSpecs() {
   document.getElementById("filters-error-message").classList.add("d-none");
   document.getElementById("no-results-message").classList.add("d-none");
 
@@ -93,11 +96,8 @@ function applyFilters() {
   const selectedStatuses = Array.from(document.querySelectorAll("#status-dropdown input"))
     .filter(input => input.checked)
     .map(input => input.value);
-  console.log(selectedStatuses);
 
   let afterDate = document.getElementById("last-updated-after-date").value;
-
-  console.log(afterDate);
 
   if (afterDate) {
     if (dateFns.isMatch(afterDate, "yyyy-MM-dd")) {
@@ -117,8 +117,6 @@ function applyFilters() {
     }
   }
 
-  console.log(afterDate);
-
   const filteredSpecs = latestSpecsFromSearch.filter(spec => {
     if (!afterDate) {
       return spec.filters.Action.some(action => selectedActions.includes(action))
@@ -132,10 +130,13 @@ function applyFilters() {
     return false;
   });
 
-  console.log(filteredSpecs);
   showSpecs(filteredSpecs);
 }
 
+/**
+ * This method show the spec on the page.
+ * @param {Array} specs - An array of specs.
+ */
 function showSpecs(specs) {
   if (specs.length === 0) {
     document.getElementById("no-results-message").classList.remove("d-none");
@@ -166,6 +167,9 @@ function showSpecs(specs) {
   shownSpecs = specs;
 }
 
+/**
+ * This method downloads the visible specs as a CSV file.
+ */
 function downloadResults() {
   const data = shownSpecs.map(spec => {
     return {
@@ -186,6 +190,12 @@ function downloadResults() {
   });
 }
 
+/**
+ * This method offers content for download to the user.
+ * @param {string} content - The content that should be downloaded.
+ * @param {string} mimeType - The mime type of the content.
+ * @param {string} filename - The default filename that the file should have when the user downloads it.
+ */
 function download(content, mimeType, filename) {
   const a = document.createElement('a') // Create "a" element
   const blob = new Blob([content], {type: mimeType}) // Create a blob (file-like object)
@@ -195,6 +205,12 @@ function download(content, mimeType, filename) {
   a.click() // Start downloading
 }
 
+/**
+ * This function compares two dates.
+ * @param {string} a - The first date.
+ * @param {string} b - The second date.
+ * @return {number} - Either -1, 0, or 1.
+ */
 function compareLastUpdated(a, b) {
   if (!a) {
     return 1;
@@ -216,6 +232,12 @@ function compareLastUpdated(a, b) {
   }
 }
 
+/**
+ * This function compares two descriptions.
+ * @param {string} a - The first description.
+ * @param {string} b - The second description.
+ * @return {number} - Either -1, 0, 1.
+ */
 function compareDescription(a, b) {
   if (!a) {
     return 1;
@@ -234,6 +256,11 @@ function compareDescription(a, b) {
   }
 }
 
+/**
+ * This function returns the highest action of an array of actions.
+ * @param {Array} actions -
+ * @return {string} - The highest action.
+ */
 function getHighestAction(actions) {
   if (actions.includes("Lead")) {
     return "Lead";
@@ -243,5 +270,20 @@ function getHighestAction(actions) {
     return "Contribute";
   } else {
     return "Endorse"
+  }
+}
+
+/**
+ * This function returns a new function that waits to execute a function until a given delay has passed.
+ * If the returned function is called before the delay has passed, the timer resets.
+ * @param {function} callback - The function that should be called once the delay has passed.
+ * @param {number} delay - The delay in milliseconds.
+ * @return {(function(): void)|*} - The new function that takes into account the delay.
+ */
+function debounce( callback, delay ) {
+  let timeout;
+  return function() {
+    clearTimeout( timeout );
+    timeout = setTimeout( callback, delay );
   }
 }

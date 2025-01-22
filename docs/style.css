@@ -10,3 +10,7 @@
 #action-dropdown, #last-updated-item {
     padding-right: 10px;
 }
+
+a {
+    color: #0EAD69 !important;
+}

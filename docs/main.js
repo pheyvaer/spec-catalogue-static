@@ -91,7 +91,6 @@ function applyFiltersAndShowSpecs() {
   const selectedActions = Array.from(document.querySelectorAll("#action-dropdown input"))
     .filter(input => input.checked)
     .map(input => input.value);
-  console.log(selectedActions);
 
   const selectedStatuses = Array.from(document.querySelectorAll("#status-dropdown input"))
     .filter(input => input.checked)

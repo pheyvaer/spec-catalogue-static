@@ -1,4 +1,7 @@
-import * as csvStringify from 'https://cdn.jsdelivr.net/npm/csv-stringify@6.5.2/+esm';
+/* eslint-disable no-undef */
+// We disable the no-undef rule because it gets triggered by window, document, and dateFns.
+
+import * as csvStringify from "https://cdn.jsdelivr.net/npm/csv-stringify@6.5.2/+esm";
 import {
   Grid,
   html
@@ -7,9 +10,9 @@ import {
 let shownSpecs = [];
 let latestSpecsFromSearch = [];
 let grid;
-let specTitleToUrl = {};
+const specTitleToUrl = {};
 const columnsConfig = [{
-  name: 'Title',
+  name: "Title",
   id: "title",
   formatter: (_, row) => html(`<a href='${specTitleToUrl[row.cells[0].data]}'>${row.cells[0].data}</a>`)
 }, {
@@ -33,7 +36,7 @@ const gridConfig = {
   data: []
 };
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener("DOMContentLoaded", async () => {
   // new PagefindUI({element: "#search", showSubResults: true});
   const pagefind = await import("./pagefind/pagefind.js");
   pagefind.init();
@@ -74,6 +77,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById("latest-run").innerText = dateFns.format(new Date(builder.dateTime), "yyyy-MM-dd kk:mm O");
 });
 
+/**
+ * This method searches for the value in the specs, applies the filters to the found specs, and shows the specs on
+ * the page.
+ * @param {object} search - The object returned by pagefind.search().
+ */
 async function processSearchValue(search) {
   const results = await Promise.all(search.results.slice(0, 1000).map(r => r.data()));
   latestSpecsFromSearch = results;
@@ -103,14 +111,14 @@ function applyFiltersAndShowSpecs() {
       afterDate = new Date(afterDate);
 
       if (afterDate.toString() === "Invalid Date") {
-        console.error(`Invalid after date: ` + document.getElementById("last-updated-after-date").value);
-        document.querySelector("#filters-error-message .col").innerText = `Invalid value for "Last updated after".`;
+        console.error("Invalid after date: " + document.getElementById("last-updated-after-date").value);
+        document.querySelector("#filters-error-message .col").innerText = "Invalid value for \"Last updated after\".";
         document.getElementById("filters-error-message").classList.remove("d-none");
         return;
       }
     } else {
-      console.error(`Invalid after date format: ` + afterDate);
-      document.querySelector("#filters-error-message .col").innerText = `Invalid date format for "Last updated after".`;
+      console.error("Invalid after date format: " + afterDate);
+      document.querySelector("#filters-error-message .col").innerText = "Invalid date format for \"Last updated after\".";
       document.getElementById("filters-error-message").classList.remove("d-none");
       return;
     }
@@ -151,7 +159,7 @@ function showSpecs(specs) {
         lastUpdated: spec.meta["Last updated"],
         actions: getHighestAction(spec.filters.Action),
         status: spec.filters.status.join(", ")
-      }
+      };
     });
 
     grid.updateConfig({
@@ -178,7 +186,7 @@ function downloadResults() {
       lastUpdated: spec.meta["Last updated"],
       actions: spec.filters.Action.join(", "),
       status: spec.filters.status.join(", ")
-    }
+    };
   });
 
   csvStringify.stringify(data, {
@@ -196,19 +204,19 @@ function downloadResults() {
  * @param {string} filename - The default filename that the file should have when the user downloads it.
  */
 function download(content, mimeType, filename) {
-  const a = document.createElement('a') // Create "a" element
-  const blob = new Blob([content], {type: mimeType}) // Create a blob (file-like object)
-  const url = URL.createObjectURL(blob) // Create an object URL from blob
-  a.setAttribute('href', url) // Set "a" element link
-  a.setAttribute('download', filename) // Set download filename
-  a.click() // Start downloading
+  const a = document.createElement("a"); // Create "a" element
+  const blob = new Blob([content], {type: mimeType}); // Create a blob (file-like object)
+  const url = URL.createObjectURL(blob); // Create an object URL from blob
+  a.setAttribute("href", url); // Set "a" element link
+  a.setAttribute("download", filename); // Set download filename
+  a.click(); // Start downloading
 }
 
 /**
  * This function compares two dates.
  * @param {string} a - The first date.
  * @param {string} b - The second date.
- * @return {number} - Either -1, 0, or 1.
+ * @returns {number} - Either -1, 0, or 1.
  */
 function compareLastUpdated(a, b) {
   if (!a) {
@@ -216,7 +224,7 @@ function compareLastUpdated(a, b) {
   }
 
   if (!b) {
-    return -1
+    return -1;
   }
 
   a = new Date(a);
@@ -235,7 +243,7 @@ function compareLastUpdated(a, b) {
  * This function compares two descriptions.
  * @param {string} a - The first description.
  * @param {string} b - The second description.
- * @return {number} - Either -1, 0, 1.
+ * @returns {number} - Either -1, 0, 1.
  */
 function compareDescription(a, b) {
   if (!a) {
@@ -243,7 +251,7 @@ function compareDescription(a, b) {
   }
 
   if (!b) {
-    return -1
+    return -1;
   }
 
   if (a < b) {
@@ -257,8 +265,8 @@ function compareDescription(a, b) {
 
 /**
  * This function returns the highest action of an array of actions.
- * @param {Array} actions -
- * @return {string} - The highest action.
+ * @param {Array} actions -.
+ * @returns {string} - The highest action.
  */
 function getHighestAction(actions) {
   if (actions.includes("Lead")) {
@@ -268,21 +276,21 @@ function getHighestAction(actions) {
   } else if (actions.includes("Contribute")) {
     return "Contribute";
   } else {
-    return "Endorse"
+    return "Endorse";
   }
 }
 
 /**
  * This function returns a new function that waits to execute a function until a given delay has passed.
  * If the returned function is called before the delay has passed, the timer resets.
- * @param {function} callback - The function that should be called once the delay has passed.
+ * @param {Function} originalFn - The function that should be called once the delay has passed.
  * @param {number} delay - The delay in milliseconds.
- * @return {(function(): void)|*} - The new function that takes into account the delay.
+ * @returns {(function(): void)|*} - The new function that takes into account the delay.
  */
-function debounce( callback, delay ) {
+function debounce(originalFn, delay ) {
   let timeout;
   return function() {
-    clearTimeout( timeout );
-    timeout = setTimeout( callback, delay );
-  }
+    clearTimeout(timeout);
+    timeout = setTimeout(originalFn, delay);
+  };
 }

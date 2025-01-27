@@ -64,7 +64,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("last-updated-after-date").addEventListener("input", applyFiltersAndShowSpecs);
-  document.getElementById("download-results-button").addEventListener("click", downloadResults);
+  document.getElementById("download-results-button").addEventListener("click", downloadResultsAsCsv);
+  document.getElementById("download-results-csv").addEventListener("click", downloadResultsAsCsv);
+  document.getElementById("download-results-jsonld").addEventListener("click", downloadResultsAsJsonld);
 
   grid = new Grid(gridConfig).render(document.getElementById("wrapper"));
 
@@ -74,7 +76,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const response2 = await fetch("./builder.json");
   const builder = await response2.json();
-  document.getElementById("latest-run").innerText = dateFns.format(new Date(builder.dateTime), "yyyy-MM-dd kk:mm O");
+  document.getElementById("latest-run").innerText = dateFns.format(new Date(builder.dateTime), "yyyy-MM-dd HH:mm O");
 });
 
 /**
@@ -175,9 +177,9 @@ function showSpecs(specs) {
 }
 
 /**
- * This method downloads the visible specs as a CSV file.
+ * This method downloads the shown specs as a CSV file.
  */
-function downloadResults() {
+function downloadResultsAsCsv() {
   const data = shownSpecs.map(spec => {
     return {
       title: spec.meta.title,
@@ -195,6 +197,37 @@ function downloadResults() {
     console.log(output);
     download(output, "text/csv", "specs.csv");
   });
+}
+
+/**
+ * This method downloads the shown specs as a JSON-LD file.
+ */
+function downloadResultsAsJsonld() {
+  const jsonld = {
+    "@context": {
+      "@vocab": "https://schema.org/",
+      "office": "https://data.knows.idlab.ugent.be/person/office/#",
+      "Spec": "http://purl.org/spar/fabio/Specification",
+      "title": "http://purl.org/dc/terms/title",
+      "description": "http://purl.org/dc/terms/description",
+      "adms": "http://www.w3.org/ns/adms#",
+      "status": "https://data.knows.idlab.ugent.be/person/office/specs#",
+      "lastUpdated": "http://purl.org/spar/fabio/dateLastUpdated",
+      "agent": {
+        "@type": "@id"
+      },
+      "hasAction": {
+        "@reverse": "object"
+      }
+    },
+    "@graph": []
+  };
+
+  shownSpecs.forEach(spec => {
+    jsonld["@graph"].push(JSON.parse(spec.meta.originalJsonldObject));
+  });
+
+  download(JSON.stringify(jsonld), "application/ld+json", "specs.jsonld");
 }
 
 /**
@@ -287,9 +320,9 @@ function getHighestAction(actions) {
  * @param {number} delay - The delay in milliseconds.
  * @returns {(function(): void)|*} - The new function that takes into account the delay.
  */
-function debounce(originalFn, delay ) {
+function debounce(originalFn, delay) {
   let timeout;
-  return function() {
+  return function () {
     clearTimeout(timeout);
     timeout = setTimeout(originalFn, delay);
   };
